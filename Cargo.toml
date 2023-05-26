@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0"
 license_file="LICENSE"
+description = "easy to use library to operate on matrices"
 
 [lib]
 name = "matrix_lib"
