@@ -306,6 +306,25 @@ mod tests {
     }
 
     #[test]
+    fn big_determinant() {
+        let m1 = matrix![
+            vec![4, 2, 7, 4],
+            vec![4, 5, 7, 4],
+            vec![8, 3, 4, 0],
+            vec![8, 1, 9, 3]
+        ];
+        assert_eq!(120.0, m1.determinant().unwrap());
+        let m2 = matrix![
+            vec![6, 7, 6, 2, 7],
+            vec![2, 5, 4, 5, 5],
+            vec![5, 2, 1, 8, 1],
+            vec![9, 9, 4, 3, 8],
+            vec![8, 1, 6, 5, 6]
+        ];
+        assert_eq!(3685.0, m2.determinant().unwrap().round());
+    }
+
+    #[test]
     fn gaussian_elimination() {
         let m1 = matrix![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
         assert_eq!(
