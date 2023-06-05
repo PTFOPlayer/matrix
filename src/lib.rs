@@ -143,11 +143,14 @@ where
     pub fn determinant(self) -> Result<f64, String> {
         if self.matrix.len() != self.matrix[0].len() {
             return Err("matrix not square".to_string());
-        }
-
-        let len = self.matrix.len();
-
-        if self.matrix.len() > 3 {
+        } else if self.matrix.len() == 2 {
+            return Ok((self.matrix[0][0] * self.matrix[1][1]
+                - self.matrix[0][1] * self.matrix[1][0])
+                .to_f64()
+                .unwrap());
+        } else if self.matrix.len() == 1 {
+            return Ok(self.matrix[0][0].to_f64().unwrap());
+        } else if self.matrix.len() >= 3 {
             let temporary_matrix = Matrix::gaussian_elimination(self.clone());
             let mut det = 1.0;
             for i in 0..temporary_matrix.matrix.len() {
@@ -155,27 +158,7 @@ where
             }
             return Ok(det);
         }
-
-        let mut temporary_matrix: Vec<Vec<T>> = self.matrix.clone();
-        for m in &self.matrix {
-            temporary_matrix.push(m.clone());
-        }
-
-        let mut sum_part = T::zero();
-        let mut sub_part = T::zero();
-        for j in 0..len {
-            let mut sum_temp = T::one();
-            let mut sub_temp = T::one();
-            for i in 0..len {
-                sum_temp *= temporary_matrix[i + j][i];
-                sub_temp *= temporary_matrix[len - j + i][len - i - 1];
-            }
-            sum_part += sum_temp;
-            sub_part += sub_temp;
-        }
-        let det = sum_part - sub_part;
-
-        Ok(det.to_f64().unwrap())
+        Err("something went wrong while calculating determinant".to_string())
     }
 
     pub fn vectorize(self) -> Vec<T> {
@@ -234,7 +217,7 @@ where
 #[macro_export]
 macro_rules! matrix {
     [$($e:expr),*] => {
-        Matrix::new(vec![$($e),*])
+        Matrix::new(vec![$($e.to_vec()),*])
     };
 
     [ $($( $f:expr ),*);*] => {
