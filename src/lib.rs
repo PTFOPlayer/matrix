@@ -68,9 +68,7 @@ where
             result_matrix.push(row);
         }
 
-        Ok(Matrix {
-            matrix: result_matrix,
-        })
+        Ok(Matrix::new(result_matrix))
     }
 
     pub fn mul(self, other: Matrix<T>) -> Result<Self, String> {
@@ -92,9 +90,7 @@ where
             result_matrix.push(result_row);
         }
 
-        Ok(Matrix {
-            matrix: result_matrix,
-        })
+        Ok(Matrix::new(result_matrix))
     }
 
     pub fn scalar_mul(self, scalar: T) -> Self {
@@ -106,9 +102,7 @@ where
             }
             result_matrix.push(row);
         }
-        Matrix {
-            matrix: result_matrix,
-        }
+        Matrix::new(result_matrix)
     }
 
     pub fn transpose(self) -> Matrix<T> {
@@ -120,9 +114,7 @@ where
             }
             result_matrix.push(result_row);
         }
-        Matrix {
-            matrix: result_matrix,
-        }
+        Matrix::new(result_matrix)
     }
 
     pub fn gaussian_elimination(self) -> Matrix<f64> {
@@ -145,39 +137,8 @@ where
                 }
             }
         }
-        Matrix { matrix: cloned }
+        Matrix::new(cloned)
     }
-
-    // laplace expansion is not needed any more
-    // pub fn laplace_expansion_determinant(m: Matrix) -> T {
-    //     if m.matrix.len() == 1 {
-    //         return m.matrix[0][0];
-    //     }
-
-    //     let mut cloned = m.clone();
-    //     // let cloned = cloned.gaussian_elimination();
-    //     println!("{}", cloned);
-    //     let mut result = 0;
-    //     for i in 0..cloned.matrix.len() {
-    //         let mut temp_matrix: Vec<Vec<T>> = Vec::new();
-    //         if cloned[i][0] != 0 {
-    //             println!("{:?}", cloned[i]);
-    //             for j in 0..cloned.matrix[0].len() {
-    //                 let mut row: Vec<T> = Vec::new();
-    //                 if j != i {
-    //                     for k in 1..cloned.matrix.len() {
-    //                         row.push(cloned[j][k]);
-    //                     }
-    //                     temp_matrix.push(row);
-    //                 }
-    //             }
-    //             println!("{:?}", temp_matrix);
-    //             println!("{}", Matrix::determinant(Matrix::new(temp_matrix.clone())).unwrap());
-    //             result += cloned[i][0] * pow(cloned[i][0], i+1) * Matrix::determinant(Matrix::new(temp_matrix)).unwrap();
-    //         }
-    //     }
-    //     result
-    // }
 
     pub fn determinant(self) -> Result<f64, String> {
         if self.matrix.len() != self.matrix[0].len() {
@@ -216,6 +177,28 @@ where
 
         Ok(det.to_f64().unwrap())
     }
+
+    pub fn vectorize(self) -> Vec<T> {
+        let mut result_vec = Vec::new();
+        for i in 0..self.matrix.len() {
+            for j in 0..self.matrix[0].len() {
+                result_vec.push(self.matrix[j][i]);
+            }
+        }
+        result_vec
+    }
+
+    pub fn from_vectorized(v: Vec<T>, columns: usize) -> Matrix<T> {
+        let mut result_matrix: Vec<Vec<T>> = Vec::new();
+        for i in 0..columns {
+            let mut row: Vec<T> = Vec::new();
+            for j in 0..v.len() / columns {
+                row.push(v[j * columns + i].clone());
+            }
+            result_matrix.push(row);
+        }
+        Matrix::new(result_matrix)
+    }
 }
 
 impl<T> fmt::Display for Matrix<T>
@@ -252,6 +235,18 @@ where
 macro_rules! matrix {
     [$($e:expr),*] => {
         Matrix::new(vec![$($e),*])
+    };
+
+    [ $($( $f:expr ),*);*] => {
+        Matrix::new(vec![$(vec![$($f),*],)*])
+    };
+
+    [$($( $f:expr) *);*] => {
+        Matrix::new(vec![$(vec![$($f),*],)*])
+    };
+
+    ($e:expr => $f:expr) => {
+        Matrix::from_vectorized($e, $f)
     }
 }
 
@@ -262,7 +257,7 @@ mod tests {
     #[test]
     fn sum() {
         let m1 = matrix![vec![1, 2, 3], vec![4, 5, 6]];
-        let m2 = matrix![vec![3, 2, 1], vec![6, 5, 4]];
+        let m2 = matrix![3, 2, 1; 6, 5, 4];
         assert_eq!(
             matrix![vec![4, 4, 4], vec![10, 10, 10]],
             m1.sum(m2).unwrap()
@@ -293,7 +288,7 @@ mod tests {
 
     #[test]
     fn transpose() {
-        let m1 = matrix![vec![1, 2, 3], vec![4, 5, 6]];
+        let m1 = matrix![1, 2, 3; 4, 5, 6];
         assert_eq!(matrix![vec![1, 4], vec![2, 5], vec![3, 6]], m1.transpose())
     }
 
@@ -358,5 +353,18 @@ mod tests {
             m1.determinant().unwrap() as f64,
             m2.gaussian_elimination().determinant().unwrap()
         );
+    }
+
+    #[test]
+    fn vectorize() {
+        let m1 = matrix![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        assert_eq!(vec![1, 4, 7, 2, 5, 8, 3, 6, 9], m1.vectorize());
+    }
+
+    #[test]
+    fn from_vec() {
+        let m1 = matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+        let v = vec![1, 4, 7, 2, 5, 8, 3, 6, 9];
+        assert_eq!(m1, matrix!(v.clone() => 3));
     }
 }
