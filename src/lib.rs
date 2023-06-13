@@ -38,7 +38,7 @@ where
         Matrix { matrix }
     }
 
-    pub fn sum(self, other: Matrix<T>) -> Result<Self, String> {
+    pub fn sum(&self, other: Matrix<T>) -> Result<Self, String> {
         if self.matrix.len() != other.matrix.len() || self.matrix[0].len() != other.matrix[0].len()
         {
             return Err("Size of matrices not maching".to_string());
@@ -55,7 +55,7 @@ where
         Ok(Matrix::new(result_matrix))
     }
 
-    pub fn mul(self, other: Matrix<T>) -> Result<Self, String> {
+    pub fn mul(&self, other: Matrix<T>) -> Result<Self, String> {
         if self.matrix[0].len() == other.matrix.len() {
             // return Err("Size of matrices not maching".to_string());
         }
@@ -77,9 +77,9 @@ where
         Ok(Matrix::new(result_matrix))
     }
 
-    pub fn scalar_mul(self, scalar: T) -> Self {
+    pub fn scalar_mul(&self, scalar: T) -> Self {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
-        for i in self.matrix {
+        for i in self.matrix.clone() {
             let mut row: Vec<T> = Vec::new();
             for j in i {
                 row.push(j * scalar);
@@ -89,7 +89,7 @@ where
         Matrix::new(result_matrix)
     }
 
-    pub fn transpose(self) -> Matrix<T> {
+    pub fn transpose(&self) -> Matrix<T> {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
         for i in 0..self.matrix[0].len() {
             let mut result_row: Vec<T> = Vec::new();
@@ -101,7 +101,7 @@ where
         Matrix::new(result_matrix)
     }
 
-    pub fn gaussian_elimination(self) -> Matrix<f64> {
+    pub fn gaussian_elimination(&self) -> Matrix<f64> {
         let mut cloned = Vec::new();
         for i in 0..self.matrix.len() {
             let mut row = Vec::new();
@@ -124,7 +124,7 @@ where
         Matrix::new(cloned)
     }
 
-    pub fn determinant(self) -> Result<f64, String> {
+    pub fn determinant(&self) -> Result<f64, String> {
         if self.matrix.len() != self.matrix[0].len() {
             return Err("matrix not square".to_string());
         } else if self.matrix.len() == 2 {
@@ -138,7 +138,7 @@ where
                 .ok_or("error occured on type conversion")?;
             return Ok(det);
         } else if self.matrix.len() >= 3 {
-            let temporary_matrix = Matrix::gaussian_elimination(self.clone());
+            let temporary_matrix = Matrix::gaussian_elimination(&self.clone());
             let mut det = 1.0;
             for i in 0..temporary_matrix.matrix.len() {
                 det *= temporary_matrix.matrix[i][i];
@@ -148,7 +148,7 @@ where
         Err("something went wrong while calculating determinant".to_string())
     }
 
-    pub fn vectorize(self) -> Vec<T> {
+    pub fn vectorize(&self) -> Vec<T> {
         let mut result_vec = Vec::new();
         for i in 0..self.matrix.len() {
             for j in 0..self.matrix[0].len() {
@@ -168,6 +168,69 @@ where
             result_matrix.push(row);
         }
         Matrix::new(result_matrix)
+    }
+
+    pub fn inverse(&self) -> Result<Matrix<f64>, String> {
+        if self.matrix.len() != self.matrix[0].len() || self.clone().determinant().unwrap() == 0.0 {
+            return Err(String::from("matrix not square or det = 0"));
+        }
+
+        let len = self.matrix.len();
+
+        let mut result_matrix = Vec::new();
+        let mut cloned = Vec::new();
+
+        for i in 0..len {
+            let mut row = Vec::new();
+            let mut result_row = Vec::new();
+            for j in 0..len {
+                row.push(self.matrix[i][j].to_f64().unwrap());
+                result_row.push(0.0);
+            }
+            cloned.push(row);
+            result_matrix.push(result_row);
+        }
+
+        for i in 0..len {
+            result_matrix[i][i] = 1.0;
+        }
+
+        for i in 0..len {
+            for j in (i + 1)..len {
+                if cloned[i][i] != 0.0 {
+                    let scalar = cloned[j][i] / cloned[i][i];
+                    for k in 0..len {
+                        cloned[j][k] = cloned[j][k] - scalar * cloned[i][k];
+                        result_matrix[j][k] = result_matrix[j][k] - scalar * result_matrix[i][k];
+                    }
+                }
+            }
+        }
+
+        for i in 0..len {
+            let scalar = 1.0 / cloned[i][i];
+            for j in 0..len {
+                result_matrix[i][j] = result_matrix[i][j] * scalar;
+                cloned[i][j] = cloned[i][j] * scalar;
+            }
+        }
+
+        for i in 0..len {
+            for j in (i + 1)..len {
+                if cloned[i][i] != 0.0 {
+                    let scalar =
+                        cloned[len - 1 - j][len - 1 - i] / cloned[len - 1 - i][len - 1 - i];
+                    for k in 0..len {
+                        cloned[len - 1 - j][k] =
+                            cloned[len - 1 - j][k] - scalar * cloned[len - 1 - i][k];
+                        result_matrix[len - 1 - j][k] =
+                            result_matrix[len - 1 - j][k] - scalar * result_matrix[len - 1 - i][k];
+                    }
+                }
+            }
+        }
+
+        Ok(Matrix::new(result_matrix))
     }
 }
 
