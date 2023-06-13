@@ -115,6 +115,18 @@ mod classic_tests {
         let v = vec![1, 4, 7, 2, 5, 8, 3, 6, 9];
         assert_eq!(m1, matrix!(v.clone() => 3));
     }
+
+    #[test]
+    fn inverse() {
+        let m1 = matrix![
+        2,1;
+        5,3
+        ];
+
+        assert_eq!(
+            matrix![3.0, -1.0; -5.0, 2.0], m1.inverse().unwrap()
+        );
+    }
 }
 
 #[cfg(test)]
@@ -176,6 +188,9 @@ mod multi_threaded_tests {
     async fn sum() {
         let m1 = matrix![[1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6]];
         let m2 = matrix![[6, 5, 4, 3, 2, 1], [6, 5, 4, 3, 2, 1]];
-        assert_eq!(m1.clone().sum(m2.clone()).unwrap(), m1.par_sum(m2).await.unwrap());
+        assert_eq!(
+            m1.clone().sum(m2.clone()).unwrap(),
+            m1.par_sum(m2).await.unwrap()
+        );
     }
 }

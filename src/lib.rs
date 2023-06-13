@@ -28,6 +28,13 @@ where
         + Copy
         + ToPrimitive,
 {
+    /// Creates a new [`Matrix<T>`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if rows of matrix are different size.
+    /// ex: matrix![[1, 2, 3], [4,5]]
+    /// 
     pub fn new(matrix: Vec<Vec<T>>) -> Matrix<T> {
         let len_0 = &matrix[0].len();
         for i in &matrix {
@@ -38,6 +45,27 @@ where
         Matrix { matrix }
     }
 
+    /// Sums two matrices of same size.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if matrices are different sizes.
+    /// 
+    /// ex:
+    /// ```
+    /// use matrix_lib::*; 
+    /// let m1 = matrix![[1,2,3], [4,5,6]];
+    /// let m2 = matrix![[1,2], [3,4], [5,6]];
+    /// ```
+    /// will not sum successfully
+    /// 
+    /// # Examples of correct usage
+    /// ```
+    /// use matrix_lib::*;
+    /// let m1 = matrix![[1,2,3], [4,5,6]];
+    /// let m2 = matrix![[3,2,1], [6,5,4]];
+    /// println!("{}", m1.sum(m2).unwrap());
+    /// ```
     pub fn sum(&self, other: Matrix<T>) -> Result<Self, String> {
         if self.matrix.len() != other.matrix.len() || self.matrix[0].len() != other.matrix[0].len()
         {
@@ -55,6 +83,11 @@ where
         Ok(Matrix::new(result_matrix))
     }
 
+    /// Multiplies two matrices.
+    ///
+    /// # Errors
+    /// ERRORS WIP IN THIS FUNCTION
+    /// This function will return an error if ...
     pub fn mul(&self, other: Matrix<T>) -> Result<Self, String> {
         if self.matrix[0].len() == other.matrix.len() {
             // return Err("Size of matrices not maching".to_string());
@@ -77,6 +110,7 @@ where
         Ok(Matrix::new(result_matrix))
     }
 
+    /// Multiplies two matrices.
     pub fn scalar_mul(&self, scalar: T) -> Self {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
         for i in self.matrix.clone() {
@@ -101,6 +135,11 @@ where
         Matrix::new(result_matrix)
     }
 
+    /// Returns the gaussian elimination of this [`Matrix<T>`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if type T is not convertable to f64 as f64 is needed to calculate this correctly.
     pub fn gaussian_elimination(&self) -> Matrix<f64> {
         let mut cloned = Vec::new();
         for i in 0..self.matrix.len() {
@@ -124,6 +163,11 @@ where
         Matrix::new(cloned)
     }
 
+    /// Returns the determinant of this [`Matrix<T>`].
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if matrix is not square.
     pub fn determinant(&self) -> Result<f64, String> {
         if self.matrix.len() != self.matrix[0].len() {
             return Err("matrix not square".to_string());
@@ -148,6 +192,7 @@ where
         Err("something went wrong while calculating determinant".to_string())
     }
 
+    /// Returns the vectorize of this [`Matrix<T>`].
     pub fn vectorize(&self) -> Vec<T> {
         let mut result_vec = Vec::new();
         for i in 0..self.matrix.len() {
@@ -158,6 +203,7 @@ where
         result_vec
     }
 
+    /// Generates [`Matrix<T>`] from provided vector.
     pub fn from_vectorized(v: Vec<T>, columns: usize) -> Matrix<T> {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
         for i in 0..columns {
@@ -170,6 +216,15 @@ where
         Matrix::new(result_matrix)
     }
 
+    /// Returns the inverse of this [`Matrix<T>`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if .
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if matrix is not suqare or determinant from given matrix is equal to 0.
     pub fn inverse(&self) -> Result<Matrix<f64>, String> {
         if self.matrix.len() != self.matrix[0].len() || self.clone().determinant().unwrap() == 0.0 {
             return Err(String::from("matrix not square or det = 0"));
