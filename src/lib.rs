@@ -1,27 +1,27 @@
 //! matrix_lib is liblary giving easy way to do calcualtions on matrices
 //! Currently implemented operations are:
 //! sum, scalar multiplication, matrix multiplication, transposition, gaussian elimination, determinant, vectorization, devectorization and inversion
-//! 
+//!
 //! example usage:
 //! ```
 //! use matrix_lib::*;
-//! 
+//!
 //! let m1 = matrix![[1,2,3],[4,5,6],[7,8,9]];
 //! assert_eq!(m1.scalar_mul(2), matrix![[2,4,6],[8,10,12],[14,16,18]]);
-//! 
-//! 
+//!
+//!
 //! let m2 = matrix![[1,2,3],[4,5,6],[7,8,9]];
 //! let m3 = matrix![[1,2,3],[4,5,6],[7, 8, 9]];
 //! assert_eq!(m2.mul(m3).unwrap(), matrix![[30, 36, 42], [66, 81, 96], [102, 126, 150]]);
 //! ```
 
-
-
-mod parallel;
-mod tests;
+pub mod functions;
+pub mod parallel;
+pub mod tests;
 
 use std::{fmt, ops::*};
 
+use functions::Size;
 use num::ToPrimitive;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,10 +53,10 @@ where
     ///
     /// Panics if rows of matrix are different size.
     /// example:
-    /// ` 
+    /// `
     /// matrix![[1, 2, 3], [4,5]]
     /// `
-    /// 
+    ///
     pub fn new(matrix: Vec<Vec<T>>) -> Matrix<T> {
         let len_0 = &matrix[0].len();
         for i in &matrix {
@@ -72,16 +72,16 @@ where
     /// # Errors
     ///
     /// This function will return an error if matrices are different sizes.
-    /// 
+    ///
     /// examples:
     /// ```
-    /// use matrix_lib::*; 
+    /// use matrix_lib::*;
     /// let m1 = matrix![[1,2,3], [4,5,6]];
     /// let m2 = matrix![[1,2], [3,4], [5,6]];
     /// assert!(matches!(m1.sum(m2), Err(String)));
     /// ```
     /// will not sum successfully
-    /// 
+    ///
     /// # Examples of correct usage
     /// ```
     /// use matrix_lib::*;
@@ -89,7 +89,7 @@ where
     /// let m2 = matrix![[1,2,3], [4,5,6]];
     /// assert_eq!(matrix![[2,4,6], [8,10,12]], m1.sum(m2).unwrap());
     /// ```
-    /// 
+    ///
     pub fn sum(&self, other: Matrix<T>) -> Result<Self, String> {
         if self.matrix.len() != other.matrix.len() || self.matrix[0].len() != other.matrix[0].len()
         {
@@ -229,6 +229,12 @@ where
     }
 
     /// Generates [`Matrix<T>`] from provided vector.
+    /// # Example
+    /// ```
+    /// use matrix_lib::*;
+    /// let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+    /// assert_eq!(matrix![1,4,7;2,5,8;3,6,9], Matrix::from_vectorized(v, 3));
+    /// ```
     pub fn from_vectorized(v: Vec<T>, columns: usize) -> Matrix<T> {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
         for i in 0..columns {
@@ -246,7 +252,7 @@ where
     /// # Panics
     ///
     /// Panics if type T is not convertable to f64 as f64 is needed to calculate this correctly.
-    /// 
+    ///
     /// # Errors
     ///
     /// This function will return an error if matrix is not suqare or determinant from given matrix is equal to 0.
@@ -309,8 +315,23 @@ where
                 }
             }
         }
-
         Ok(Matrix::new(result_matrix))
+    }
+
+    /// Returns the get size of this [`Matrix<T>`].
+    ///
+    /// # Example
+    /// ```
+    /// use matrix_lib::*;
+    /// use matrix_lib::functions::Size;
+    /// let m = matrix![1,2,3;4,5,6;7,8,9;10,11,12];
+    /// assert_eq!(m.get_size(), Size{x: 3, y: 4});
+    /// ```
+    pub fn get_size(&self) -> Size {
+        return Size {
+            x: self.matrix[0].len(),
+            y: self.matrix.len(),
+        };
     }
 }
 
@@ -329,19 +350,17 @@ where
     }
 }
 
-
-
 /// Hels with matrix creation
-/// 
+///
 /// examples:
 /// ```
 /// use matrix_lib::*;
 /// let m1 = matrix![[1,2,3], [4,5,6], [7,8,9]]; // each array provided in this macro is separate row
-/// 
+///
 /// let m2 = matrix![1,2,3;4,5,6;7,8,9]; // rows are separated by semicolon `;`
-/// 
-/// let m3 = matrix![1 2 3; 4 5 6; 7 8 9]; // rows are separated by semicolon but with elements separated by space 
-/// 
+///
+/// let m3 = matrix![1 2 3; 4 5 6; 7 8 9]; // rows are separated by semicolon but with elements separated by space
+///
 /// let m4 = matrix!([1,2,3,4,5,6,7,8,9] => 3); // splits vectorized matrix into columns of matrix with 3 elements by each
 /// assert_eq!(m1, m2);
 /// assert_eq!(m2, m3);
