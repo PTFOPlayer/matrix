@@ -24,9 +24,10 @@ use std::{fmt, ops::*};
 use functions::Size;
 use num::ToPrimitive;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Matrix<T> {
     matrix: Vec<Vec<T>>,
+    __det_mul: f64,
 }
 
 impl<T> Matrix<T>
@@ -64,7 +65,10 @@ where
                 panic!("Error occured creating matrix: rows different size");
             }
         }
-        Matrix { matrix }
+        Matrix {
+            matrix,
+            __det_mul: 1.0,
+        }
     }
 
     /// Sums two matrices of same size.
@@ -165,7 +169,7 @@ where
     /// # Panics
     ///
     /// Panics if type T is not convertable to f64 as f64 is needed to calculate this correctly.
-    pub fn gaussian_elimination(&self) -> Matrix<f64> {
+    pub fn gaussian_elimination(&mut self) -> Matrix<f64> {
         let mut cloned = Vec::new();
         for i in 0..self.matrix.len() {
             let mut row = Vec::new();
@@ -183,6 +187,9 @@ where
                             let temp = cloned[j].clone();
                             cloned[j] = cloned[i].clone();
                             cloned[i] = temp;
+                            if r - i % 2 != 0 {
+                                self.__det_mul = self.__det_mul * -1.0;
+                            }
                             break;
                         }
                     }
@@ -203,26 +210,26 @@ where
     /// # Errors
     ///
     /// This function will return an error if matrix is not square.
-    pub fn determinant(&self) -> Result<f64, String> {
+    pub fn determinant(&mut self) -> Result<f64, String> {
         if self.matrix.len() != self.matrix[0].len() {
             return Err("matrix not square".to_string());
         } else if self.matrix.len() == 2 {
             let mat = &self.matrix;
             let det_t = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
             let det = det_t.to_f64().ok_or("error occured on type conversion")?;
-            return Ok(det);
+            return Ok(det * self.__det_mul);
         } else if self.matrix.len() == 1 {
             let det = self.matrix[0][0]
                 .to_f64()
                 .ok_or("error occured on type conversion")?;
-            return Ok(det);
+            return Ok(det * self.__det_mul);
         } else if self.matrix.len() >= 3 {
-            let temporary_matrix = Matrix::gaussian_elimination(&self.clone());
+            let temporary_matrix = Matrix::gaussian_elimination(self);
             let mut det = 1.0;
             for i in 0..temporary_matrix.matrix.len() {
                 det *= temporary_matrix.matrix[i][i];
             }
-            return Ok(det);
+            return Ok(det * self.__det_mul);
         }
         Err("something went wrong while calculating determinant".to_string())
     }
