@@ -1,3 +1,12 @@
+//! Provides basic parallelism for calcualtions on matrices
+//! 
+//! Available operations are:
+//! par_scalar_mul -> multiplication of matrix by number
+//! par_mul -> multiplication of matrix by matrix 
+//! par_sum -> sum of matrices
+ 
+ 
+
 use std::ops::*;
 
 use num::ToPrimitive;
@@ -77,7 +86,8 @@ where
     }
 
     pub async fn par_sum(self, other: Matrix<T>) -> Result<Matrix<T>, String> {
-        if self.matrix.len() != other.matrix.len() && self.matrix[0].len() != other.matrix[0].len() {
+        if self.matrix.len() != other.matrix.len() && self.matrix[0].len() != other.matrix[0].len()
+        {
             return Err("matrix dimensions do not match".to_string());
         }
 
@@ -92,7 +102,7 @@ where
                         result_row.push(t_matrix[i][j] + t_other[i][j]);
                     }
                     result_row
-                }));       
+                }));
             }
             handles
         };

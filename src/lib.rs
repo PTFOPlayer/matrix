@@ -113,8 +113,8 @@ where
     /// ERRORS WIP IN THIS FUNCTION
     /// This function will return an error if ...
     pub fn mul(&self, other: Matrix<T>) -> Result<Self, String> {
-        if self.matrix[0].len() == other.matrix.len() {
-            // return Err("Size of matrices not maching".to_string());
+        if self.matrix[0].len() != other.matrix.len() {
+            return Err("Size of matrices not maching".to_string());
         }
 
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
@@ -177,6 +177,16 @@ where
 
         for i in 0..cloned.len() {
             for j in (i + 1)..cloned.len() {
+                if cloned[i][i] == 0.0 {
+                    for r in (i + 1)..cloned.len() {
+                        if cloned[r][i] != 0.0 {
+                            let temp = cloned[j].clone();
+                            cloned[j] = cloned[i].clone();
+                            cloned[i] = temp;
+                            break;
+                        }
+                    }
+                }
                 if cloned[i][i] != 0.0 {
                     let scalar = cloned[j][i] / cloned[i][i];
                     for k in 0..cloned[0].len() {
@@ -283,6 +293,16 @@ where
 
         for i in 0..len {
             for j in (i + 1)..len {
+                if cloned[i][i] == 0.0 {
+                    for r in (i + 1)..len {
+                        if cloned[r][i] != 0.0 {
+                            let temp = cloned[j].clone();
+                            cloned[j] = cloned[i].clone();
+                            cloned[i] = temp;
+                            break;
+                        }
+                    }
+                }
                 if cloned[i][i] != 0.0 {
                     let scalar = cloned[j][i] / cloned[i][i];
                     for k in 0..len {
@@ -303,6 +323,16 @@ where
 
         for i in 0..len {
             for j in (i + 1)..len {
+                if cloned[i][i] == 0.0 {
+                    for r in (i + 1)..len {
+                        if cloned[r][i] != 0.0 {
+                            let temp = cloned[len - 1 - j].clone();
+                            cloned[len - 1 - j] = cloned[len - 1 - i].clone();
+                            cloned[len - 1 - i] = temp;
+                            break;
+                        }
+                    }
+                }
                 if cloned[i][i] != 0.0 {
                     let scalar =
                         cloned[len - 1 - j][len - 1 - i] / cloned[len - 1 - i][len - 1 - i];
