@@ -18,6 +18,7 @@
 pub mod functions;
 pub mod parallel;
 pub mod tests;
+pub mod staticmatrix;
 
 use std::{fmt, ops::*};
 
@@ -138,7 +139,7 @@ where
         Ok(Matrix::new(result_matrix))
     }
 
-    /// Multiplies two matrices.
+    /// Multiplies matrice by number.
     pub fn scalar_mul(&self, scalar: T) -> Self {
         let mut result_matrix: Vec<Vec<T>> = Vec::new();
         for i in self.matrix.clone() {
@@ -403,6 +404,7 @@ where
 /// assert_eq!(m2, m3);
 /// assert_eq!(m4, matrix![[1, 4, 7], [2, 5, 8], [3, 6, 9]]);
 /// ```
+/// 
 #[macro_export]
 macro_rules! matrix {
     [$($e:expr),*] => {
