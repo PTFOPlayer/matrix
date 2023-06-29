@@ -319,9 +319,6 @@ where
                     }
                 }
             }
-        }
-
-        for i in 0..len {
             let scalar = 1.0 / cloned[i][i];
             for j in 0..len {
                 result_matrix[i][j] = result_matrix[i][j] * scalar;
