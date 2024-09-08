@@ -291,74 +291,19 @@ where
 
         let len = self.rows;
         let n = len;
-        
+
         let mut cloned: Vec<f64> = self.matrix.iter().map(|x| x.to_f64().unwrap()).collect();
         let mut result_matrix = vec![0.0; self.rows * self.rows];
         for i in 0..self.rows {
             result_matrix[i * self.rows + i] = 1.0;
         }
 
-        // for i in 0..len {
-        //     for j in (i + 1)..len {
-        //         if cloned[i * self.rows + i] == 0.0f64 {
-        //             for r in (i + 1)..len {
-        //                 if cloned[r * self.rows + i] != 0.0 {
-        //                     let temp = cloned[j].clone();
-        //                     cloned[j] = cloned[i].clone();
-        //                     cloned[i] = temp;
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //         if cloned[i * self.rows + i] != 0.0 {
-        //             let scalar = cloned[j*self.rows+i] / cloned[i*self.rows+i];
-        //             for k in 0..len {
-        //                 cloned[j * self.rows + k] = cloned[j * self.rows + k] - scalar * cloned[i * self.rows +k];
-        //                 result_matrix[j*self.rows+k] = result_matrix[j*self.rows+k] - scalar * result_matrix[i*self.rows+k];
-        //             }
-        //         }
-        //     }
-        //     let scalar = 1.0 / cloned[i*self.rows+i];
-        //     for j in 0..len {
-        //         result_matrix[i*self.rows+j] = result_matrix[i*self.rows+j] * scalar;
-        //         cloned[i*self.rows+j] = cloned[i*self.rows+j] * scalar;
-        //     }
-        // }
-
-        // for i in 0..len {
-        //     for j in (i + 1)..len {
-        //         if cloned[i*self.rows+i] == 0.0 {
-        //             for r in (i + 1)..len {
-        //                 if cloned[r*self.rows+i] != 0.0 {
-        //                     let temp = cloned[len - 1 - j].clone();
-        //                     cloned[len - 1 - j] = cloned[len - 1 - i].clone();
-        //                     cloned[len - 1 - i] = temp;
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //         if cloned[i*self.rows+i] != 0.0 {
-        //             let scalar =
-        //                 cloned[(len - 1 - j)*self.rows+(len - 1 - i)] / cloned[(len - 1 - i)*self.rows+(len - 1 - i)];
-        //             for k in 0..len {
-        //                 cloned[(len - 1 - j)*self.rows+k] =
-        //                     cloned[(len - 1 - j)*self.rows+k] - scalar * cloned[(len - 1 - i)*self.rows+k];
-        //                 result_matrix[(len - 1 - j)*self.rows+k] =
-        //                     result_matrix[(len - 1 - j)*self.rows+k] - scalar * result_matrix[(len - 1 - i)*self.rows+k];
-        //             }
-        //         }
-        //     }
-        // }
-
-           // Perform Gaussian elimination on the augmented matrix
-           for i in 0..n {
-            // Pivoting: Ensure that the diagonal element is non-zero
+        for i in 0..n {
             let pivot_index = i * n + i;
             if cloned[pivot_index].abs() < 1e-10 {
                 let mut swapped = false;
                 for row in (i + 1)..n {
                     if cloned[row * n + i].abs() > 1e-10 {
-                        // Swap rows in both original and identity matrix
                         for col in 0..n {
                             cloned.swap(i * n + col, row * n + col);
                             result_matrix.swap(i * n + col, row * n + col);
@@ -368,7 +313,7 @@ where
                     }
                 }
                 if !swapped {
-                    panic!("Matrix is singular and cannot be inverted.");
+                    return Err("Matrix is singular and cannot be inverted.".to_string());
                 }
             }
 
@@ -379,7 +324,6 @@ where
                 result_matrix[i * n + col] /= pivot_value;
             }
 
-            // Eliminate the current column in other rows
             for row in 0..n {
                 if row != i {
                     let factor = cloned[row * n + i];
